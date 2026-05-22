@@ -68,16 +68,10 @@ export default function AuthPage() {
         .strength-seg { flex: 1; height: 100%; transition: background 0.3s; }
       `}</style>
 
-      {/* Grid achtergrond */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(#00f5ff06 1px, transparent 1px), linear-gradient(90deg, #00f5ff06 1px, transparent 1px)", backgroundSize: "50px 50px", pointerEvents: "none" }} />
-
-      {/* Glow */}
       <div style={{ position: "fixed", top: "15%", left: "5%", width: 500, height: 500, background: "radial-gradient(circle, #00f5ff08, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
-      {/* Card */}
       <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 440, margin: "0 16px", animation: "fadeUp 0.5s ease both" }}>
-
-        {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{ width: 40, height: 40, background: "linear-gradient(135deg, #00f5ff, #0080ff)", clipPath: "polygon(50% 0%, 100% 30%, 100% 70%, 50% 100%, 0% 70%, 0% 30%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚡</div>
@@ -86,23 +80,18 @@ export default function AuthPage() {
           <p style={{ fontSize: 13, color: "#3a4a5c", letterSpacing: 1, marginTop: 8 }}>AI-POWERED GAMING COACH</p>
         </div>
 
-        {/* Main card */}
         <div style={{ background: "linear-gradient(160deg, #0d1117 0%, #0a0f1a 100%)", border: "1px solid #1e2a3a", position: "relative", overflow: "hidden" }}>
           <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #00f5ff, transparent)" }} />
-
-          {/* Hoek decoraties */}
           <div style={{ position: "absolute", top: 2, left: 0, width: 20, height: 20, borderLeft: "2px solid #00f5ff44", borderTop: "2px solid #00f5ff44" }} />
           <div style={{ position: "absolute", top: 2, right: 0, width: 20, height: 20, borderRight: "2px solid #00f5ff44", borderTop: "2px solid #00f5ff44" }} />
           <div style={{ position: "absolute", bottom: 0, left: 0, width: 20, height: 20, borderLeft: "2px solid #00f5ff44", borderBottom: "2px solid #00f5ff44" }} />
           <div style={{ position: "absolute", bottom: 0, right: 0, width: 20, height: 20, borderRight: "2px solid #00f5ff44", borderBottom: "2px solid #00f5ff44" }} />
 
-          {/* Tabs */}
           <div style={{ display: "flex", borderBottom: "1px solid #1e2a3a" }}>
             <button className={`tab-btn ${mode === "login" ? "active" : ""}`} onClick={() => switchMode("login")}>Login</button>
             <button className={`tab-btn ${mode === "register" ? "active" : ""}`} onClick={() => switchMode("register")}>Register</button>
           </div>
 
-          {/* Form */}
           <div style={{ padding: "32px 32px 28px" }}>
             {done ? (
               <div style={{ textAlign: "center", padding: "16px 0" }}>
@@ -115,7 +104,7 @@ export default function AuthPage() {
                   {mode === "login" ? "Welcome back!" : "Account created!"}
                 </h2>
                 <p style={{ fontSize: 14, color: "#8892b0", lineHeight: 1.7, marginBottom: 24 }}>
-                  {mode === "login" ? `Signed in as ${email}. Redirecting to dashboard...` : `Verification email sent to ${email}.`}
+                  {mode === "login" ? `Signed in as ${email}.` : `Verification email sent to ${email}.`}
                 </p>
                 <a href="/" style={{ display: "inline-block", padding: "12px 32px", background: "linear-gradient(135deg, #00f5ff, #0080ff)", color: "#050810", fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 900, letterSpacing: 2, textDecoration: "none" }}>
                   GO TO DASHBOARD →
@@ -152,14 +141,12 @@ export default function AuthPage() {
                       {showPass ? "🙈" : "👁"}
                     </button>
                     {mode === "register" && password && (
-                      <div>
-                        <div className="strength-bar">
-                          {[0,1,2,3].map((i) => {
-                            const score = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length;
-                            const colors = ["#ff4444","#ff8800","#ffcc00","#00cc66"];
-                            return <div key={i} className="strength-seg" style={{ background: i < score ? colors[score-1] : "#1e2a3a" }} />;
-                          })}
-                        </div>
+                      <div className="strength-bar">
+                        {[0,1,2,3].map((i) => {
+                          const score = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length;
+                          const colors = ["#ff4444","#ff8800","#ffcc00","#00cc66"];
+                          return <div key={i} className="strength-seg" style={{ background: i < score ? colors[score-1] : "#1e2a3a" }} />;
+                        })}
                       </div>
                     )}
                     {errors.password && <div className="error-msg">⚠ {errors.password}</div>}
@@ -197,12 +184,8 @@ export default function AuthPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button className="social-btn">
-                      <span style={{ fontSize: 16, fontWeight: 700, color: "#4285f4" }}>G</span> Google
-                    </button>
-                    <button className="social-btn">
-                      <span style={{ fontSize: 16, fontWeight: 700, color: "#5865f2" }}>D</span> Discord
-                    </button>
+                    <button className="social-btn"><span style={{ fontSize: 16, fontWeight: 700, color: "#4285f4" }}>G</span> Google</button>
+                    <button className="social-btn"><span style={{ fontSize: 16, fontWeight: 700, color: "#5865f2" }}>D</span> Discord</button>
                   </div>
                 </div>
 
