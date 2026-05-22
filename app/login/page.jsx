@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { supabase } from "../../lib/supabase";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
@@ -27,9 +28,34 @@ export default function AuthPage() {
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1800));
-    setLoading(false);
-    setDone(true);
+    setErrors({});
+
+    try {
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setErrors({ general: error.message });
+          setLoading(false);
+          return;
+        }
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        });
+        if (error) {
+          setErrors({ general: error.message });
+          setLoading(false);
+          return;
+        }
+      }
+      setLoading(false);
+      setDone(true);
+    } catch (e) {
+      setErrors({ general: "Something went wrong. Please try again." });
+      setLoading(false);
+    }
   };
 
   const switchMode = (m) => {
@@ -163,6 +189,12 @@ export default function AuthPage() {
                   {mode === "login" && (
                     <div style={{ textAlign: "right", marginTop: -8 }}>
                       <button style={{ background: "none", border: "none", color: "#3a4a5c", fontSize: 12, cursor: "pointer" }}>Forgot password?</button>
+                    </div>
+                  )}
+
+                  {errors.general && (
+                    <div style={{ fontSize: 13, color: "#ff6b6b", background: "#ff444411", border: "1px solid #ff444433", padding: "10px 14px" }}>
+                      ⚠ {errors.general}
                     </div>
                   )}
 
