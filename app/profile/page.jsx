@@ -18,13 +18,14 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [profile, setProfile] = useState({
+ const [profile, setProfile] = useState({
     username: "",
     rank: "Gold I",
     platform: "PC",
     hoursPlayed: "",
     favoriteMode: "3v3",
     bio: "",
+    epicGamesName: "",
   });
 
   useEffect(() => {
@@ -129,6 +130,23 @@ export default function ProfilePage() {
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>USERNAME</div>
               <input className="profile-input" placeholder="Your username" value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value })} />
             </div>
+            {/* Epic Games */}
+<div style={{ gridColumn: "span 2" }}>
+  <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>EPIC GAMES NAME</div>
+  <div style={{ position: "relative" }}>
+    <input
+      className="profile-input"
+      placeholder="Your Epic Games username"
+      value={profile.epicGamesName}
+      onChange={(e) => setProfile({ ...profile, epicGamesName: e.target.value })}
+      style={{ paddingLeft: 44 }}
+    />
+    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 18 }}>🎮</span>
+  </div>
+  <div style={{ fontSize: 11, color: "#3a4a5c", marginTop: 6 }}>
+    Used to link your Rocket League stats to your BrainBoost profile
+  </div>
+</div>
 
             {/* Rank */}
             <div>
