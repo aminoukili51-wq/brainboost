@@ -29,33 +29,38 @@ export default function AuthPage() {
     if (!validate()) return;
     setLoading(true);
     setErrors({});
-
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          setErrors({ general: error.message });
-          setLoading(false);
-          return;
-        }
+        if (error) { setErrors({ general: error.message }); setLoading(false); return; }
+        window.location.href = "/dashboard";
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email, password,
           options: { data: { username } },
         });
-        if (error) {
-          setErrors({ general: error.message });
-          setLoading(false);
-          return;
-        }
+        if (error) { setErrors({ general: error.message }); setLoading(false); return; }
+        setLoading(false);
+        setDone(true);
       }
-      setLoading(false);
-      setDone(true);
     } catch (e) {
       setErrors({ general: "Something went wrong. Please try again." });
       setLoading(false);
     }
+  };
+
+  const handleGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/dashboard` }
+    });
+  };
+
+  const handleDiscord = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: { redirectTo: `${window.location.origin}/dashboard` }
+    });
   };
 
   const switchMode = (m) => {
@@ -127,12 +132,12 @@ export default function AuthPage() {
                   </svg>
                 </div>
                 <h2 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 10 }}>
-                  {mode === "login" ? "Welcome back!" : "Account created!"}
+                  Account created!
                 </h2>
                 <p style={{ fontSize: 14, color: "#8892b0", lineHeight: 1.7, marginBottom: 24 }}>
-                  {mode === "login" ? `Signed in as ${email}.` : `Verification email sent to ${email}.`}
+                  Verification email sent to {email}. Check your inbox!
                 </p>
-                <a href="/" style={{ display: "inline-block", padding: "12px 32px", background: "linear-gradient(135deg, #00f5ff, #0080ff)", color: "#050810", fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 900, letterSpacing: 2, textDecoration: "none" }}>
+                <a href="/dashboard" style={{ display: "inline-block", padding: "12px 32px", background: "linear-gradient(135deg, #00f5ff, #0080ff)", color: "#050810", fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 900, letterSpacing: 2, textDecoration: "none" }}>
                   GO TO DASHBOARD →
                 </a>
               </div>
@@ -216,8 +221,12 @@ export default function AuthPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button className="social-btn"><span style={{ fontSize: 16, fontWeight: 700, color: "#4285f4" }}>G</span> Google</button>
-                    <button className="social-btn"><span style={{ fontSize: 16, fontWeight: 700, color: "#5865f2" }}>D</span> Discord</button>
+                    <button className="social-btn" onClick={handleGoogle}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "#4285f4" }}>G</span> Google
+                    </button>
+                    <button className="social-btn" onClick={handleDiscord}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "#5865f2" }}>D</span> Discord
+                    </button>
                   </div>
                 </div>
 
