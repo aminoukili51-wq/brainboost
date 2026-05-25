@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
- const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState({
     username: "",
     rank: "Gold I",
     platform: "PC",
@@ -33,23 +33,61 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = "/login"; return; }
       setUser(user);
-      setProfile(prev => ({
-        ...prev,
-        username: user.user_metadata?.username || user.email?.split("@")[0] || "",
-      }));
+
+      // Laad bestaand profiel uit database
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setProfile({
+          username: data.username || user.user_metadata?.username || "",
+          rank: data.rank || "Gold I",
+          platform: data.platform || "PC",
+          hoursPlayed: data.hours_played || "",
+          favoriteMode: data.favorite_mode || "3v3",
+          bio: data.bio || "",
+          epicGamesName: data.epic_games_name || "",
+        });
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          username: user.user_metadata?.username || user.email?.split("@")[0] || "",
+        }));
+      }
       setLoading(false);
     };
     getUser();
   }, []);
 
- const handleSave = async () => {
+  const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        username: profile.username,
+        rank: profile.rank,
+        platform: profile.platform,
+        hours_played: parseInt(profile.hoursPlayed) || 0,
+        favorite_mode: profile.favoriteMode,
+        bio: profile.bio,
+        epic_games_name: profile.epicGamesName,
+        updated_at: new Date().toISOString(),
+      });
+
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => {
-      window.location.href = "/coaching";
-    }, 1500);
+
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => {
+        window.location.href = "/coaching";
+      }, 1500);
+    }
   };
 
   if (loading) return (
@@ -76,7 +114,7 @@ export default function ProfilePage() {
         .save-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .platform-btn { padding: 10px 20px; background: #0a0f1a; border: 1px solid #1e2a3a; color: #8892b0; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .platform-btn.active { border-color: #00f5ff; color: #00f5ff; background: #00f5ff11; }
-        .platform-btn:hover:not(.active) { border-color: #1e2a3a99; color: #e8eaf6; }
+        .platform-btn:hover:not(.active) { color: #e8eaf6; }
         .mode-btn { padding: 10px 20px; background: #0a0f1a; border: 1px solid #1e2a3a; color: #8892b0; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .mode-btn.active { border-color: #a855f7; color: #a855f7; background: #a855f711; }
         .mode-btn:hover:not(.active) { color: #e8eaf6; }
@@ -99,7 +137,6 @@ export default function ProfilePage() {
 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "100px 40px 60px", position: "relative", zIndex: 1 }}>
 
-        {/* Header */}
         <div style={{ marginBottom: 40, animation: "fadeUp 0.4s ease both" }}>
           <div style={{ fontSize: 11, color: "#00f5ff", letterSpacing: 4, fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Your Profile</div>
           <h1 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 32, fontWeight: 900, color: "#fff" }}>PLAYER SETTINGS</h1>
@@ -125,30 +162,20 @@ export default function ProfilePage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
 
-            {/* Username */}
             <div style={{ gridColumn: "span 2" }}>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>USERNAME</div>
               <input className="profile-input" placeholder="Your username" value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value })} />
             </div>
-            {/* Epic Games */}
-<div style={{ gridColumn: "span 2" }}>
-  <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>EPIC GAMES NAME</div>
-  <div style={{ position: "relative" }}>
-    <input
-      className="profile-input"
-      placeholder="Your Epic Games username"
-      value={profile.epicGamesName}
-      onChange={(e) => setProfile({ ...profile, epicGamesName: e.target.value })}
-      style={{ paddingLeft: 44 }}
-    />
-    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 18 }}>🎮</span>
-  </div>
-  <div style={{ fontSize: 11, color: "#3a4a5c", marginTop: 6 }}>
-    Used to link your Rocket League stats to your BrainBoost profile
-  </div>
-</div>
 
-            {/* Rank */}
+            <div style={{ gridColumn: "span 2" }}>
+              <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>EPIC GAMES NAME</div>
+              <div style={{ position: "relative" }}>
+                <input className="profile-input" placeholder="Your Epic Games username" value={profile.epicGamesName} onChange={(e) => setProfile({ ...profile, epicGamesName: e.target.value })} style={{ paddingLeft: 44 }} />
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 18 }}>🎮</span>
+              </div>
+              <div style={{ fontSize: 11, color: "#3a4a5c", marginTop: 6 }}>Used to link your Rocket League stats to your BrainBoost profile</div>
+            </div>
+
             <div>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>CURRENT RANK</div>
               <select className="profile-select" value={profile.rank} onChange={(e) => setProfile({ ...profile, rank: e.target.value })}>
@@ -156,23 +183,20 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            {/* Hours */}
             <div>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>HOURS PLAYED</div>
               <input className="profile-input" placeholder="e.g. 500" type="number" value={profile.hoursPlayed} onChange={(e) => setProfile({ ...profile, hoursPlayed: e.target.value })} />
             </div>
 
-            {/* Platform */}
             <div>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 10, fontWeight: 600, letterSpacing: 1 }}>PLATFORM</div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {["PC", "PlayStation", "Xbox", "Switch"].map(p => (
                   <button key={p} className={`platform-btn ${profile.platform === p ? "active" : ""}`} onClick={() => setProfile({ ...profile, platform: p })}>{p}</button>
                 ))}
               </div>
             </div>
 
-            {/* Game Mode */}
             <div>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 10, fontWeight: 600, letterSpacing: 1 }}>FAVORITE MODE</div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -182,7 +206,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Bio */}
             <div style={{ gridColumn: "span 2" }}>
               <div style={{ fontSize: 11, color: "#8892b0", marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>BIO</div>
               <textarea className="profile-input" placeholder="Tell something about yourself..." value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} style={{ height: 100, resize: "none", paddingTop: 12 }} />
@@ -193,7 +216,7 @@ export default function ProfilePage() {
         {/* Save */}
         <div style={{ background: "#0d1117", border: "1px solid #1e2a3a", padding: "20px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", animation: "fadeUp 0.4s 0.3s ease both" }}>
           <div style={{ fontSize: 13, color: saved ? "#00cc66" : "#3a4a5c" }}>
-            {saved ? "✅ Profile saved successfully!" : "Changes are saved locally"}
+            {saved ? "✅ Profile saved to database!" : "Save your profile to the database"}
           </div>
           <button className="save-btn" onClick={handleSave} disabled={saving}>
             {saving ? (
@@ -207,10 +230,9 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Quick links */}
         <div style={{ display: "flex", gap: 12, marginTop: 16, animation: "fadeUp 0.4s 0.4s ease both" }}>
-          <a href="/dashboard" style={{ flex: 1, padding: "14px", background: "#0d1117", border: "1px solid #1e2a3a", color: "#8892b0", fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 2, textDecoration: "none", textAlign: "center", transition: "all 0.2s" }}>← DASHBOARD</a>
-          <a href="/coaching" style={{ flex: 1, padding: "14px", background: "#0d1117", border: "1px solid #1e2a3a", color: "#8892b0", fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 2, textDecoration: "none", textAlign: "center", transition: "all 0.2s" }}>AI COACHING →</a>
+          <a href="/dashboard" style={{ flex: 1, padding: "14px", background: "#0d1117", border: "1px solid #1e2a3a", color: "#8892b0", fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 2, textDecoration: "none", textAlign: "center" }}>← DASHBOARD</a>
+          <a href="/coaching" style={{ flex: 1, padding: "14px", background: "#0d1117", border: "1px solid #1e2a3a", color: "#8892b0", fontFamily: "'Orbitron', sans-serif", fontSize: 11, letterSpacing: 2, textDecoration: "none", textAlign: "center" }}>AI COACHING →</a>
         </div>
       </div>
     </div>
